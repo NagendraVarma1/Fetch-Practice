@@ -4,23 +4,41 @@ import MoviesList from "./Components/MoviesList";
 function App() {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   async function fetchMoviesHandler() {
     setIsLoading(true);
-    const response = await fetch("https://swapi.dev/api/films/");
-    const data = await response.json();
+    setError(null);
+      try {
+        const response = await fetch("https://swapi.dev/api/films/");
 
-    const transformedMovies = data.results.map((movieData) => {
-      return {
-        id: movieData.episode_id,
-        title: movieData.title,
-        openingText: movieData.opening_crawl,
-        releaseDate: movieData.release_date,
-      };
-    });
-    setMovies(transformedMovies);
+        if (!response.ok) {
+          throw new Error("Something went wrong.....Retrying");
+        }
+
+        const data = await response.json();
+
+        const transformedMovies = data.results.map((movieData) => {
+          return {
+            id: movieData.episode_id,
+            title: movieData.title,
+            openingText: movieData.opening_crawl,
+            releaseDate: movieData.release_date,
+          };
+        });
+        setMovies(transformedMovies);
+      } catch (error) {
+        setError(error.message);
+      }
+    
     setIsLoading(false);
   }
+
+
+  const cancleHandler = () => {
+    setError(null);
+  };
+
   return (
     <React.Fragment>
       <section>
@@ -28,8 +46,10 @@ function App() {
       </section>
       <section>
         {isLoading && <h1>Loading...</h1>}
-        {!isLoading && movies.length === 0 && <p>No Movies....</p>}
-        {!isLoading && movies.length>0 && <MoviesList movies={movies} />}
+        {!isLoading && movies.length === 0 && !error && <p>No Movies....</p>}
+        {!isLoading && movies.length > 0 && <MoviesList movies={movies} />}
+        {!isLoading && error && <p>{error}</p>}
+        {!isLoading && error && <button onClick={cancleHandler}>cancle</button>}
       </section>
     </React.Fragment>
   );
