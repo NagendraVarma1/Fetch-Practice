@@ -1,11 +1,11 @@
 import React, { useRef } from "react";
 
-const MovieForm = () => {
+const MovieForm = (props) => {
     const titleInputRef = useRef();
     const openingTextInputRef = useRef();
     const releaseDateInputRef = useRef();
 
-    const formSubmitHandler = (event) => {
+    async function formSubmitHandler(event) {
         event.preventDefault();
 
         const title = titleInputRef.current.value;
@@ -17,7 +17,16 @@ const MovieForm = () => {
             openingText,
             releaseDate
         }
-        console.log(newMovie)
+        const response = await fetch("https://react-project-4e5e7-default-rtdb.firebaseio.com/movies.json", {
+          method: 'POST',
+          body: JSON.stringify(newMovie),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        const data = await response.json();
+        console.log(data)
+        props.onButtonClick();
     }
 
 

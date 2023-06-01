@@ -4,10 +4,12 @@ const MoviesList = (props) => {
     return(
         <ul>
             {props.movies.map((movie) => (
-                <Movie key={movie.id}
+                <Movie key= {movie.id} 
+                id={movie.id}
                 title={movie.title}
-                releaseDate= {movie.release}
-                openingText = {movie.openingText} />
+                releaseDate= {movie.releaseDate}
+                openingText = {movie.openingText} 
+                onButtonClick={props.onButtonClick}/>
             ))}
         </ul>
     )

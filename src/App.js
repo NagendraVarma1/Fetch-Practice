@@ -6,62 +6,59 @@ function App() {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [render, setRender] = useState(false)
+  const [render, setRender] = useState(true)
 
   const fetchMoviesHandler = useCallback(async () => {
     setIsLoading(true);
+    setRender(false);
     setError(null);
     try {
-      const response = await fetch("https://swapi.dev/api/films/");
+      const response = await fetch(
+        "https://react-project-4e5e7-default-rtdb.firebaseio.com/movies.json"
+      );
 
       if (!response.ok) {
-        setRender(true);
         throw new Error("Something went wrong.....Retrying");
       }
 
       const data = await response.json();
 
-      const transformedMovies = data.results.map((movieData) => {
-        return {
-          id: movieData.episode_id,
-          title: movieData.title,
-          openingText: movieData.opening_crawl,
-          releaseDate: movieData.release_date,
-        };
-      });
-      setMovies(transformedMovies);
+      const loadedMovies = [];
+
+      for (const key in data) {
+        loadedMovies.push({
+          id: key,
+          title: data[key].title,
+          openingText: data[key].openingText,
+          releaseDate: data[key].releaseDate,
+        });
+      }
+
+      setMovies(loadedMovies);
     } catch (error) {
       setError(error.message);
     }
 
     setIsLoading(false);
-  }, [])
-
+  }, []);
+  
+  const renderHandler = () => {
+    setRender(true)
+  }
 
   useEffect(() => {
-    if (render) {
-      let interval = setInterval(() => {
-        fetchMoviesHandler();
-      }, 5000);
-      return () => {
-        clearInterval(interval)
-      }
+    console.log('testing useEffect');
+    if(render) {
+      fetchMoviesHandler();
     }
-    
-    if(!error) {
-      fetchMoviesHandler()
-    }
-  }, [render,error, fetchMoviesHandler]);
+      
+  }, [render, fetchMoviesHandler]);
 
-  const cancleHandler = () => {
-    setError(null)
-    setRender(false);
-  };
 
   return (
     <React.Fragment>
       <section>
-        <MovieForm />
+        <MovieForm onButtonClick= {renderHandler}/>
       </section>
       <section>
         <button onClick={fetchMoviesHandler}>Fetch Movies</button>
@@ -69,9 +66,8 @@ function App() {
       <section>
         {isLoading && <h1>Loading...</h1>}
         {!isLoading && movies.length === 0 && !error && <p>No Movies....</p>}
-        {!isLoading && movies.length > 0 && <MoviesList movies={movies} />}
+        {!isLoading && movies.length > 0 && <MoviesList movies={movies} onButtonClick= {renderHandler}/>}
         {!isLoading && error && <p>{error}</p>}
-        {!isLoading && error && <button onClick={cancleHandler}>cancle</button>}
       </section>
     </React.Fragment>
   );
